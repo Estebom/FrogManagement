@@ -1,0 +1,77 @@
+﻿@page "/frogs"
+@attribute [Authorize]
+@using FrogManagement.Data.Models
+@using FrogManagement.Data.Repositories
+@rendermode InteractiveServer
+<h3>FrogManager</h3>
+
+<div>
+    @if(frogs != null)
+    {
+        <select>
+            @foreach (Frog frog in frogs)
+            {
+            <option>@frog.Name</option>
+            }
+        </select>
+    }
+
+    <p>Status: @status</p>
+
+</div>
+<div>
+    <label>
+        Name
+        <InputText title="Name" @bind-Value="frogDTO.Name" />
+    </label>
+    <InputNumber @bind-Value="frogDTO.JumpHeight"/>
+    <InputNumber @bind-Value="frogDTO.Weight"/>
+    <button type="button" @onclick="Add">Add Frog</button>
+</div>
+
+<div>
+    <InputText @bind-Value="id"/>
+    <InputText @bind-Value="frogDTO.Name"/>
+    <InputNumber @bind-Value="frogDTO.JumpHeight"/>
+    <InputNumber @bind-Value="frogDTO.Weight"/>
+    <button type="button" @onclick="@(async () => await frogRepository.Update(Guid.Parse(id), frogDTO))">Update Frog</button>
+</div>
+
+<div>
+    <InputText @bind-Value="id"/>
+    <button type="button" @onclick="@(async () => await frogRepository.Delete(Guid.Parse(id)))">Delete Frog</button>
+</div>
+
+
+@code {
+
+    [Inject]
+    IFrogRepository frogRepository { get; set; }
+
+    List<Frog> frogs = new List<Frog>();
+
+    FrogDTO frogDTO = new FrogDTO();
+
+    string id { get; set; }
+
+    private string status = "Not clicked";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        frogs = await frogRepository.Get();
+        foreach (Frog frog in frogs) 
+        {
+            Console.WriteLine(frog.Name);
+        }
+    }
+
+    public async Task Add()
+    {
+        status = $"Clicked at {DateTime.Now:T}";
+
+        Console.WriteLine("hi");
+        await frogRepository.Add(frogDTO);
+        frogs = await frogRepository.Get();
+    }
+}
